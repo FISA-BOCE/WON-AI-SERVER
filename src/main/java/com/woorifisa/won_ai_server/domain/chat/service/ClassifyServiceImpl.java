@@ -30,14 +30,14 @@ public class ClassifyServiceImpl implements ClassifyService {
               }
             }
             [queryType 목록]
-            PAYMENT_TOTAL       - 이번달 카드 결제 총액
-            POINT_BALANCE       - 포인트 잔액
-            POINT_EARNED        - 이번달 포인트 적립액
-            ETF_LIST            - 보유 ETF 목록
-            ETF_AMOUNT          - ETF 총 매수금액
-            ETF_USER_AVG_POINT  - 나와 같은 ETF를 선택한 사용자들의 평균 포인트 투자금액 (그래프 조회)
-            POINT_TO_ETF        - 내 포인트가 어떤 ETF 투자 요청으로 이어졌는지 (그래프 조회)
-            UNKNOWN             - 위 항목에 해당하지 않는 질문
+            CARD_MONTHLY_TOTAL_SPEND  - 이번달 카드 결제 총액
+            POINT_CURRENT_BALANCE     - 포인트 잔액
+            POINT_MONTHLY_EARNED      - 이번달 포인트 적립액
+            ETF_LIST                  - 보유 ETF 목록
+            ETF_AMOUNT                - ETF 총 매수금액
+            SAME_ETF_AVERAGE_POINT    - 나와 같은 ETF를 선택한 사용자들의 평균 포인트 투자금액 (그래프 조회)
+            MY_POINT_INVESTMENT_PATH  - 내 포인트가 어떤 ETF 투자 요청으로 이어졌는지 (그래프 조회)
+            UNKNOWN                   - 위 항목에 해당하지 않는 질문
             [dbTarget 판단 기준]
             MYSQL: 테이블에 이미 집계된 숫자를 꺼내오면 되는 질문
               예) 총액, 잔액, 적립액, ETF 금액
