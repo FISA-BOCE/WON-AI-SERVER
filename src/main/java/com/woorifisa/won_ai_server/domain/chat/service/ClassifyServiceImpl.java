@@ -8,6 +8,9 @@ import com.woorifisa.won_ai_server.domain.chat.external.OpenAiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Service
 @RequiredArgsConstructor
 public class ClassifyServiceImpl implements ClassifyService {
@@ -60,7 +63,9 @@ public class ClassifyServiceImpl implements ClassifyService {
 
     @Override
     public ClassifyResponse classify(ClassifyRequest request) {
-        String json = openAiClient.callWithJsonResponse(SYSTEM_PROMPT, request.message());
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String userMessage = String.format("[오늘 날짜: %s]\n%s", today, request.message());
+        String json = openAiClient.callWithJsonResponse(SYSTEM_PROMPT, userMessage);
         try {
             return objectMapper.readValue(json, ClassifyResponse.class);
         } catch (JsonProcessingException e) {

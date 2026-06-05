@@ -20,17 +20,17 @@ public class AiController {
     private final AnswerService answerService;
 
     @PostMapping("/classify")
-    public ClassifyResponse classify(
-            @RequestHeader("X-Transaction-ID") String transactionId,
+    public ApiResponse<ClassifyResponse> classify(
+            @RequestHeader(value = "X-Transaction-ID", required = false) String transactionId,
             @Valid @RequestBody ClassifyRequest request
     ) {
-        return classifyService.classify(request);
+        return ApiResponse.ok(classifyService.classify(request));
     }
 
     @PostMapping("/answer")
     public ApiResponse<AnswerResponse> answer(
-            @RequestHeader("X-Transaction-ID") String transactionId,
-            @RequestBody AnswerRequest request
+            @RequestHeader(value = "X-Transaction-ID", required = false) String transactionId,
+            @Valid @RequestBody AnswerRequest request
     ) {
         return ApiResponse.ok(answerService.generateAnswer(request));
     }

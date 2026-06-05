@@ -10,6 +10,7 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Component
 public class MdcFilter implements Filter {
@@ -22,9 +23,10 @@ public class MdcFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         String transactionId = httpRequest.getHeader(TRANSACTION_ID_HEADER);
-        if (transactionId != null) {
-            MDC.put(MDC_KEY, transactionId);
+        if (transactionId == null || transactionId.isBlank()) {
+            transactionId = "local-" + UUID.randomUUID().toString().substring(0, 8);
         }
+        MDC.put(MDC_KEY, transactionId);
         try {
             chain.doFilter(request, response);
         } finally {
