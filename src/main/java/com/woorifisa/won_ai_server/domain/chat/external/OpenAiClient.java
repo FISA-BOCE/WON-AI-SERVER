@@ -17,6 +17,9 @@ public class OpenAiClient {
 
     private final WebClient openAiWebClient;
 
+    @Value("${azure-openai.api-key}")
+    private String apiKey;
+
     @Value("${azure-openai.model}")
     private String model;
 
@@ -48,6 +51,7 @@ public class OpenAiClient {
         String uri = String.format("/openai/deployments/%s/chat/completions?api-version=%s", model, apiVersion);
         JsonNode response = openAiWebClient.post()
                 .uri(uri)
+                .header("api-key", apiKey)
                 .bodyValue(requestBody)
                 .retrieve()
                 .onStatus(

@@ -13,9 +13,6 @@ import java.time.Duration;
 @Configuration
 public class WebClientConfig {
 
-    @Value("${azure-openai.api-key}")
-    private String apiKey;
-
     @Value("${azure-openai.endpoint}")
     private String endpoint;
 
@@ -28,7 +25,6 @@ public class WebClientConfig {
         return WebClient.builder()
                 .baseUrl(endpoint)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .defaultHeader("api-key", apiKey)
                 .defaultHeader("Content-Type", "application/json")
                 .build();
     }
