@@ -18,14 +18,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleAiClientException(AiClientException e) {
         log.error("Azure OpenAI 호출 오류: {}", e.getMessage(), e);
         return ResponseEntity.internalServerError()
-                .body(new ApiResponse<>(500, e.getMessage(), null));
+                .body(ApiResponse.error("AI 서비스 오류가 발생했습니다."));
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Void>> handleRuntimeException(RuntimeException e) {
         log.error("내부 서버 오류: {}", e.getMessage(), e);
         return ResponseEntity.internalServerError()
-                .body(new ApiResponse<>(500, e.getMessage(), null));
+                .body(ApiResponse.error("내부 서버 오류가 발생했습니다. 관리자에게 문의하세요."));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -34,6 +34,6 @@ public class GlobalExceptionHandler {
                 .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
                 .collect(Collectors.joining(", "));
         return ResponseEntity.badRequest()
-                .body(new ApiResponse<>(400, message, null));
+                .body(ApiResponse.badRequest(message));
     }
 }

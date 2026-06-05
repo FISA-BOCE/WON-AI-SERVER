@@ -9,7 +9,10 @@ import com.woorifisa.won_ai_server.domain.chat.service.ClassifyService;
 import com.woorifisa.won_ai_server.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,7 +24,6 @@ public class AiController {
 
     @PostMapping("/classify")
     public ApiResponse<ClassifyResponse> classify(
-            @RequestHeader(value = "X-Transaction-ID", required = false) String transactionId,
             @Valid @RequestBody ClassifyRequest request
     ) {
         return ApiResponse.ok(classifyService.classify(request));
@@ -29,7 +31,6 @@ public class AiController {
 
     @PostMapping("/answer")
     public ApiResponse<AnswerResponse> answer(
-            @RequestHeader(value = "X-Transaction-ID", required = false) String transactionId,
             @Valid @RequestBody AnswerRequest request
     ) {
         return ApiResponse.ok(answerService.generateAnswer(request));

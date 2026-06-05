@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woorifisa.won_ai_server.domain.chat.dto.request.ClassifyRequest;
 import com.woorifisa.won_ai_server.domain.chat.dto.response.ClassifyResponse;
 import com.woorifisa.won_ai_server.domain.chat.external.OpenAiClient;
+import com.woorifisa.won_ai_server.global.exception.AiClientException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -69,7 +70,7 @@ public class ClassifyServiceImpl implements ClassifyService {
         try {
             return objectMapper.readValue(json, ClassifyResponse.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("classify 응답 파싱 실패: " + e.getMessage(), e);
+            throw new AiClientException("classify 응답 파싱 실패: " + e.getMessage(), e);
         }
     }
 }

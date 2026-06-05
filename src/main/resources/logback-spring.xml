@@ -8,9 +8,10 @@
     </appender>
 
     <springProfile name="local">
-        <root level="DEBUG">
+        <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
+        <logger name="com.woorifisa.won_ai_server" level="DEBUG"/>
     </springProfile>
 
     <springProfile name="prod">
