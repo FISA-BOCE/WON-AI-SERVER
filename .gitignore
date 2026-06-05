@@ -29,6 +29,8 @@ out/
 *.log
 logs/
 
+.claude/
+
 # Spring Boot
 HELP.md
 
