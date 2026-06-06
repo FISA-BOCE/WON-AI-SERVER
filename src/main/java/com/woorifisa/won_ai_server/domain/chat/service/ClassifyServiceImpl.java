@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +60,8 @@ public class ClassifyServiceImpl implements ClassifyService {
             baseMonth: 항상 포함. 현재 날짜 기준 YYYY-MM 형식
             """;
 
+    private static final Pattern BASE_MONTH_PATTERN = Pattern.compile("^\\d{4}-(0[1-9]|1[0-2])$");
+
     private final OpenAiClient openAiClient;
     private final ObjectMapper objectMapper;
 
@@ -68,9 +71,24 @@ public class ClassifyServiceImpl implements ClassifyService {
         String userMessage = String.format("[오늘 날짜: %s]\n%s", today, request.message());
         String json = openAiClient.callWithJsonResponse(SYSTEM_PROMPT, userMessage);
         try {
-            return objectMapper.readValue(json, ClassifyResponse.class);
+            ClassifyResponse response = objectMapper.readValue(json, ClassifyResponse.class);
+            validateClassifyResponse(response);
+            return response;
         } catch (JsonProcessingException e) {
             throw new AiClientException("classify 응답 파싱 실패: " + e.getMessage(), e);
+        }
+    }
+
+    private void validateClassifyResponse(ClassifyResponse response) {
+        if (response.confidence() < 0.0 || response.confidence() > 1.0) {
+            throw new AiClientException("classify 응답의 confidence 값이 유효하지 않습니다: " + response.confidence());
+        }
+        if (response.params() == null || !response.params().containsKey("baseMonth")) {
+            throw new AiClientException("classify 응답에 baseMonth가 누락되었습니다.");
+        }
+        String baseMonth = response.params().get("baseMonth");
+        if (!BASE_MONTH_PATTERN.matcher(baseMonth).matches()) {
+            throw new AiClientException("classify 응답의 baseMonth 형식이 올바르지 않습니다: " + baseMonth);
         }
     }
 }
