@@ -17,10 +17,23 @@ public class WebClientConfig {
     private String endpoint;
 
     @Bean
-    public WebClient openAiWebClient() {
+    public WebClient classifyWebClient() {
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3_000)
                 .responseTimeout(Duration.ofSeconds(10));
+
+        return WebClient.builder()
+                .baseUrl(endpoint)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .defaultHeader("Content-Type", "application/json")
+                .build();
+    }
+
+    @Bean
+    public WebClient answerWebClient() {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3_000)
+                .responseTimeout(Duration.ofSeconds(30));
 
         return WebClient.builder()
                 .baseUrl(endpoint)

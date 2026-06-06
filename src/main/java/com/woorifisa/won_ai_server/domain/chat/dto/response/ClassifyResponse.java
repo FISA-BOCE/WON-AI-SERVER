@@ -3,9 +3,9 @@ package com.woorifisa.won_ai_server.domain.chat.dto.response;
 import java.util.Map;
 
 public record ClassifyResponse(
-        String queryType,
-        String dbTarget,
-        String dataSource,
+        QueryType queryType,
+        DbTarget dbTarget,
+        DataSource dataSource,
         double confidence,
         Map<String, String> params
 ) {}

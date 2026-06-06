@@ -2,7 +2,7 @@ package com.woorifisa.won_ai_server.domain.chat.external;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.woorifisa.won_ai_server.global.exception.AiClientException;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -12,10 +12,10 @@ import java.util.Map;
 import java.util.Objects;
 
 @Component
-@RequiredArgsConstructor
 public class OpenAiClient {
 
-    private final WebClient openAiWebClient;
+    private final WebClient classifyWebClient;
+    private final WebClient answerWebClient;
 
     @Value("${azure-openai.api-key}")
     private String apiKey;
@@ -26,6 +26,14 @@ public class OpenAiClient {
     @Value("${azure-openai.api-version}")
     private String apiVersion;
 
+    public OpenAiClient(
+            @Qualifier("classifyWebClient") WebClient classifyWebClient,
+            @Qualifier("answerWebClient") WebClient answerWebClient
+    ) {
+        this.classifyWebClient = classifyWebClient;
+        this.answerWebClient = answerWebClient;
+    }
+
     public String callWithJsonResponse(String systemPrompt, String userMessage) {
         Map<String, Object> requestBody = Map.of(
                 "messages", List.of(
@@ -34,7 +42,7 @@ public class OpenAiClient {
                 ),
                 "response_format", Map.of("type", "json_object")
         );
-        return extractContent(requestBody);
+        return extractContent(classifyWebClient, requestBody);
     }
 
     public String callWithTextResponse(String systemPrompt, String userMessage) {
@@ -44,12 +52,12 @@ public class OpenAiClient {
                         Map.of("role", "user", "content", userMessage)
                 )
         );
-        return extractContent(requestBody);
+        return extractContent(answerWebClient, requestBody);
     }
 
-    private String extractContent(Map<String, Object> requestBody) {
+    private String extractContent(WebClient webClient, Map<String, Object> requestBody) {
         String uri = String.format("/openai/deployments/%s/chat/completions?api-version=%s", model, apiVersion);
-        JsonNode response = openAiWebClient.post()
+        JsonNode response = webClient.post()
                 .uri(uri)
                 .header("api-key", apiKey)
                 .bodyValue(requestBody)
