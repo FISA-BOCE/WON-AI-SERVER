@@ -83,6 +83,9 @@ public class ClassifyServiceImpl implements ClassifyService {
         if (response == null) {
             throw new AiClientException("classify 응답이 비어 있습니다.");
         }
+        if (response.queryType() == null || response.dbTarget() == null || response.dataSource() == null) {
+            throw new AiClientException("classify 응답의 필수 분류 필드(queryType/dbTarget/dataSource)가 누락되었습니다.");
+        }
         if (response.confidence() < 0.0 || response.confidence() > 1.0) {
             throw new AiClientException("classify 응답의 confidence 값이 유효하지 않습니다: " + response.confidence());
         }
