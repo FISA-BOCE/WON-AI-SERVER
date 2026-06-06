@@ -80,6 +80,9 @@ public class ClassifyServiceImpl implements ClassifyService {
     }
 
     private void validateClassifyResponse(ClassifyResponse response) {
+        if (response == null) {
+            throw new AiClientException("classify 응답이 비어 있습니다.");
+        }
         if (response.confidence() < 0.0 || response.confidence() > 1.0) {
             throw new AiClientException("classify 응답의 confidence 값이 유효하지 않습니다: " + response.confidence());
         }
@@ -87,6 +90,9 @@ public class ClassifyServiceImpl implements ClassifyService {
             throw new AiClientException("classify 응답에 baseMonth가 누락되었습니다.");
         }
         String baseMonth = response.params().get("baseMonth");
+        if (baseMonth == null) {
+            throw new AiClientException("classify 응답의 baseMonth 값이 비어 있습니다.");
+        }
         if (!BASE_MONTH_PATTERN.matcher(baseMonth).matches()) {
             throw new AiClientException("classify 응답의 baseMonth 형식이 올바르지 않습니다: " + baseMonth);
         }
