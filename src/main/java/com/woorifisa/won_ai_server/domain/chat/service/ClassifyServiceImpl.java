@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woorifisa.won_ai_server.domain.chat.dto.request.ClassifyRequest;
 import com.woorifisa.won_ai_server.domain.chat.dto.response.ClassifyResponse;
+import com.woorifisa.won_ai_server.domain.chat.dto.response.DataSource;
+import com.woorifisa.won_ai_server.domain.chat.dto.response.DbTarget;
+import com.woorifisa.won_ai_server.domain.chat.dto.response.QueryType;
 import com.woorifisa.won_ai_server.domain.chat.external.OpenAiClient;
 import com.woorifisa.won_ai_server.global.exception.AiClientException;
 import lombok.RequiredArgsConstructor;
@@ -46,12 +49,14 @@ public class ClassifyServiceImpl implements ClassifyService {
             NEO4J: A → B → C 관계를 따라가야 답을 구할 수 있는 질문
               예) 포인트 → ETF 전환 흐름
                   같은 ETF 선택한 유저들의 평균 포인트
+            NONE: queryType이 UNKNOWN인 경우
             [dataSource 판단 기준]
             CARD: 카드 결제, 포인트, 실적, 리워드 관련
               예) 결제 총액, 포인트 잔액, 포인트 적립
             SECURITIES: ETF 보유, 매수금액 관련
               예) ETF 목록, ETF 총액
             단, 포인트 → ETF 전환 흐름은 CARD
+            NONE: queryType이 UNKNOWN인 경우
             [confidence 기준]
             0.9 이상: 질문이 명확하고 queryType 확실히 매핑됨
             0.7~0.9: 다소 모호하지만 판단 가능
@@ -83,8 +88,8 @@ public class ClassifyServiceImpl implements ClassifyService {
         if (response == null) {
             throw new AiClientException("classify 응답이 비어 있습니다.");
         }
-        if (response.queryType() == null || response.dbTarget() == null || response.dataSource() == null) {
-            throw new AiClientException("classify 응답의 필수 분류 필드(queryType/dbTarget/dataSource)가 누락되었습니다.");
+        if (response.queryType() == null) {
+            throw new AiClientException("classify 응답의 queryType이 누락되었습니다.");
         }
         if (response.confidence() < 0.0 || response.confidence() > 1.0) {
             throw new AiClientException("classify 응답의 confidence 값이 유효하지 않습니다: " + response.confidence());
@@ -98,6 +103,15 @@ public class ClassifyServiceImpl implements ClassifyService {
         }
         if (!BASE_MONTH_PATTERN.matcher(baseMonth).matches()) {
             throw new AiClientException("classify 응답의 baseMonth 형식이 올바르지 않습니다: " + baseMonth);
+        }
+
+        if (response.queryType() != QueryType.UNKNOWN) {
+            if (response.dbTarget() == null || response.dbTarget() == DbTarget.NONE) {
+                throw new AiClientException("classify 응답의 dbTarget이 누락되었습니다.");
+            }
+            if (response.dataSource() == null || response.dataSource() == DataSource.NONE) {
+                throw new AiClientException("classify 응답의 dataSource가 누락되었습니다.");
+            }
         }
     }
 }

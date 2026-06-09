@@ -3,6 +3,7 @@ package com.woorifisa.won_ai_server.global.exception;
 import com.woorifisa.won_ai_server.global.exception.AiClientException;
 import com.woorifisa.won_ai_server.global.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,7 +18,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AiClientException.class)
     public ResponseEntity<ApiResponse<Void>> handleAiClientException(AiClientException e) {
         log.error("Azure OpenAI 호출 오류: {}", e.getMessage(), e);
-        return ResponseEntity.internalServerError()
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                 .body(ApiResponse.error("AI 서비스 오류가 발생했습니다."));
     }
 
