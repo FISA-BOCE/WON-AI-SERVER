@@ -9,6 +9,10 @@ on:
     branches:
       - develop
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -41,7 +45,9 @@ jobs:
         run: ./gradlew test --no-daemon
 
       - name: Build Docker image
-        run: docker build -t ${{ env.IMAGE }} .
+        env:
+          IMAGE: ${{ env.IMAGE }}
+        run: docker build -t "$IMAGE" .
 
   cd:
     name: Push image to ACR and deploy
@@ -60,16 +66,24 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: ACR Login
-        run: az acr login --name ${{ env.ACR_NAME }}
+        env:
+          ACR_NAME: ${{ env.ACR_NAME }}
+        run: az acr login --name "$ACR_NAME"
 
       - name: Build and push image
+        env:
+          IMAGE: ${{ env.IMAGE }}
         run: |
-          docker build -t ${{ env.IMAGE }} .
-          docker push ${{ env.IMAGE }}
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
 
       - name: Deploy to Container Apps
+        env:
+          IMAGE: ${{ env.IMAGE }}
+          CONTAINER_APP_NAME: ${{ env.CONTAINER_APP_NAME }}
+          RESOURCE_GROUP: ${{ env.RESOURCE_GROUP }}
         run: |
           az containerapp update \
-            --name ${{ env.CONTAINER_APP_NAME }} \
-            --resource-group ${{ env.RESOURCE_GROUP }} \
-            --image ${{ env.IMAGE }}
+            --name "$CONTAINER_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$IMAGE"
