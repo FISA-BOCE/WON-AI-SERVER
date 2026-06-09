@@ -1,0 +1,8 @@
+server:
+  port: 8090
+
+azure-openai:
+  api-key: ${AZURE_OPENAI_API_KEY}
+  endpoint: ${AZURE_OPENAI_ENDPOINT}
+  model: ${AZURE_OPENAI_MODEL:gpt-4o}
+  api-version: ${AZURE_OPENAI_API_VERSION:2024-02-01}
