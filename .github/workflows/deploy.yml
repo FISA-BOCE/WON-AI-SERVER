@@ -1,0 +1,91 @@
+name: CI and CD
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - develop
+      - main
+  push:
+    branches:
+      - develop
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  ACR_NAME: chatbot01acr
+  IMAGE: chatbot01acr.azurecr.io/won-ai-server:latest
+  CONTAINER_APP_NAME: chatbot-app
+  RESOURCE_GROUP: chatbot-rg
+
+jobs:
+  ci:
+    name: Test and build image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d
+
+      - name: Run tests
+        run: ./gradlew test --no-daemon
+
+      - name: Build Docker image
+        env:
+          IMAGE: ${{ env.IMAGE }}
+        run: docker build -t "$IMAGE" .
+
+  cd:
+    name: Push image to ACR and deploy
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+
+      - name: Azure Login
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5  # v2.3.0
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: ACR Login
+        env:
+          ACR_NAME: ${{ env.ACR_NAME }}
+        run: az acr login --name "$ACR_NAME"
+
+      - name: Build and push image
+        env:
+          IMAGE: ${{ env.IMAGE }}
+        run: |
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy to Container Apps
+        env:
+          IMAGE: ${{ env.IMAGE }}
+          CONTAINER_APP_NAME: ${{ env.CONTAINER_APP_NAME }}
+          RESOURCE_GROUP: ${{ env.RESOURCE_GROUP }}
+        run: |
+          az containerapp update \
+            --name "$CONTAINER_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$IMAGE"
