@@ -29,10 +29,13 @@ out/
 *.log
 logs/
 
+.claude/
+
 # Spring Boot
 HELP.md
 
 src/main/resources/application.yml
 src/main/resources/application-local.yml
+src/main/resources/application-prod.yml
 src/main/resources/application-test.yml
 src/test/resources/application-test.yml
