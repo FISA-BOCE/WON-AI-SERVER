@@ -44,6 +44,9 @@ jobs:
         uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d
 
       - name: Run tests
+        env:
+          AZURE_OPENAI_API_KEY: test-key
+          AZURE_OPENAI_ENDPOINT: https://test.openai.azure.com/
         run: ./gradlew test --no-daemon
 
       - name: Build Docker image
